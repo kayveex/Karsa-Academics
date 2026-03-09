@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -13,13 +14,48 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * Indicates if the model's ID is auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
+     * The data type of the auto-incrementing ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->{$model->getKeyName()})) {
+                do {
+                    $id = Str::random(10);
+                } while (static::where($model->getKeyName(), $id)->exists());
+
+                $model->{$model->getKeyName()} = $id;
+            }
+        });
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'username',
         'email',
+        'role',
+        'full_name',
+        'subjects',
         'password',
     ];
 
